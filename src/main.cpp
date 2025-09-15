@@ -2,8 +2,10 @@
 #include <iostream>
 
 int main() {
-    micrograd::Value val(3.14f);
-    std::cout << "Data: " << val.get_data() << std::endl;
-    std::cout << "Grad: " << val.get_grad() << std::endl;
+    micrograd::Value a(3.14f);
+    micrograd::Value b(2.0f);
+    micrograd::Value c = a - b;
+    std::cout << "Data: " << c.get_data() << std::endl;
+    std::cout << "Grad: " << c.get_grad() << std::endl;
     return 0;
 }

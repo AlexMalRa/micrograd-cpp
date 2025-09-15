@@ -8,9 +8,24 @@ namespace micrograd {
 class Value {
 public:
     Value(float data); // Constructor declaration
-    virtual ~Value() = default; // Default destructor
-    virtual float get_data() const; // Getter for data. Const means it does not modify the object.
-    virtual float get_grad() const; // Getter for grad
+    ~Value() = default; // Default destructor
+    float get_data() const; // Getter for data. Const means it does not modify the object.
+    float get_grad() const; // Getter for grad
+
+    // Overload the + operator
+    Value operator+(const Value& other) const; // Const means it does not modify the object.
+
+    // Overload the - operator
+    Value operator-(const Value& other) const;
+
+    // Overload the * operator
+    Value operator*(const Value& other) const;
+
+    // Overload the / operator
+    Value operator/(const Value& other) const;
+
+    // Overload the unary - operator
+    Value operator-() const;
 
 private:
     float data;

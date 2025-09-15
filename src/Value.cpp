@@ -12,4 +12,24 @@ float Value::get_grad() const {
     return grad;
 }
 
+Value Value::operator+(const Value& other) const {
+    return Value(this->data + other.data);
+}
+
+Value Value::operator-(const Value& other) const {
+    return Value(this->data - other.data);
+}
+
+Value Value::operator*(const Value& other) const {
+    return Value(this->data * other.data);
+}
+
+Value Value::operator/(const Value& other) const {
+    return Value(this->data / other.data);
+}
+
+Value Value::operator-() const {
+    return Value(-this->data);
+}
+
 } // namespace micrograd
