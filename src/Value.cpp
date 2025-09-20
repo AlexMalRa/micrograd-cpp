@@ -1,4 +1,5 @@
 #include "micrograd/Value.hpp"
+#include <iostream>
 
 namespace micrograd {
 
@@ -9,11 +10,7 @@ float Value::get_data() const {
 }
 
 float Value::get_grad() const {
-    return grad;
-}
-
-void Value::set_grad(float grad) {
-    this->grad = grad;
+    return total_grad;
 }
 
 Value Value::operator+(Value& other){
@@ -23,8 +20,8 @@ Value Value::operator+(Value& other){
     result.op.push_back("+");
     
     // Set the result of the gradient of the operation wrt to its inputs
-    this->set_grad(1.0f);
-    other.set_grad(1.0f);
+    this->local_grad = 1.0f;
+    other.local_grad = 1.0f;
     return result;
 }
 
@@ -34,8 +31,8 @@ Value Value::operator-(Value& other){
     result.prev_inputs.push_back(const_cast<Value*>(&other));
     result.op.push_back("-");
 
-    this->set_grad(1.0f);
-    other.set_grad(-1.0f);
+    this->local_grad = 1.0f;
+    other.local_grad = -1.0f;
     return result;
 }
 
@@ -45,8 +42,8 @@ Value Value::operator*(Value& other) {
     result.prev_inputs.push_back(const_cast<Value*>(&other));
     result.op.push_back("*");
 
-    this->set_grad(other.data);
-    other.set_grad(this->data);
+    this->local_grad = other.data;
+    other.local_grad = this->data;
     return result;
 }
 
@@ -56,8 +53,8 @@ Value Value::operator/(Value& other) {
     result.prev_inputs.push_back(const_cast<Value*>(&other));
     result.op.push_back("/");
 
-    this->set_grad(1.0f / other.data);
-    other.set_grad(-this->data / (other.data * other.data));
+    this->local_grad = 1.0f / other.data;
+    other.local_grad = -this->data / (other.data * other.data);
     return result;
 }
 
@@ -66,8 +63,27 @@ Value Value::operator-() {
     result.prev_inputs.push_back(const_cast<Value*>(this));
     result.op.push_back("neg");
 
-    this->set_grad(-1.0f);
+    this->local_grad = -1.0f;
     return result;
 }
 
+void Value::backward() {
+    std::cout << "Backward called on Value with data: " << this->data << std::endl;
+    // Perform a simple backward pass (not a full autograd engine)
+    for (auto input : prev_inputs) {
+        std::cout << "Checking input with value: " << input->get_data() << std::endl;
+        if (!input->op.empty()) {
+            std::cout << "Input has operation: " << input->op[0] << std::endl;
+            input->acc_grad = this->acc_grad * input->local_grad;
+            input->total_grad += input->acc_grad;
+            input->backward(); // Recursively call backward on inputs
+        }
+        else {
+            std::cout << "Input is a leaf node with value: " << input->get_data() << std::endl;
+            input->acc_grad = this->acc_grad * input->local_grad;
+            input->total_grad += input->acc_grad;
+            std::cout << "Leaf node total_grad updated to: " << input->total_grad << std::endl;
+        }
+    }
+}
 } // namespace micrograd
